@@ -1,9 +1,5 @@
-import {
-  runTests,
-  test,
-  assert,
-  equal
-} from "https://deno.land/x/testing/mod.ts";
+import { runIfMain, test } from "https://deno.land/x/testing/mod.ts";
+import { assert } from "https://deno.land/x/testing/asserts.ts";
 
 import { SHA512 } from "./mod.ts";
 
@@ -13,4 +9,4 @@ test(function self() {
 
 // TODO: test vectors
 
-runTests();
+runIfMain(import.meta)

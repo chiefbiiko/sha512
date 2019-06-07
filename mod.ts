@@ -2,9 +2,12 @@ import { Hash, clear, bin2hex, str2bin } from './utils.ts';
 
 const encoder: TextEncoder = new TextEncoder();
 
+/** Byte length of a SHA512 hash. */
+export const BYTES: number = 64;
+
 /** A class representation of the SHA-512 algorithm. */
 export class SHA512 implements Hash {
-  readonly hashSize: number = 64;
+  readonly hashSize: number = BYTES;
   readonly buffer: Uint8Array = new Uint8Array(128);
   
   bufferIndex: number;
