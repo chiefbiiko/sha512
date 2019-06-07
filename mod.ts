@@ -1,4 +1,21 @@
-import { Hash, clear, bin2hex, str2bin } from './utils.ts';
+interface Hash {
+  hashSize: number;
+  init(): Hash;
+  update(msg?: string | Uint8Array): Hash;
+  digest(msg?: string | Uint8Array): Uint8Array;
+}
+
+/** Converts a byte array to hex string. */
+function bin2hex(bin: Uint8Array, uppercase: boolean = false): string {
+  let hex = uppercase ? '0123456789ABCDEF' : '0123456789abcdef';
+  let str = '';
+  for (let i = 0, len = bin.length; i < len; i++) {
+    str += hex.charAt((bin[i] >>> 4) & 0x0f) + hex.charAt(bin[i] & 0x0f);
+    // str += bin[i].toString(16);
+  }
+  return str;
+}
+
 
 const encoder: TextEncoder = new TextEncoder();
 
@@ -53,7 +70,7 @@ export class SHA512 implements Hash {
                               0x510e527f, 0xade682d1, 0x9b05688c, 0x2b3e6c1f, 0x1f83d9ab, 0xfb41bd6b, 0x5be0cd19, 0x137e2179]);
     this.bufferIndex = 0;
     this.count = new Uint32Array(2);
-    clear(this.buffer);
+    this.buffer.fill(0);
 
     return this;
   }
@@ -304,12 +321,17 @@ export class SHA512 implements Hash {
     let toBeHashed = '', hash;
     for (let i = 0; i < 10; i++) {
       for (let n = 100 * i; n < 100 * (i + 1); n++) {
-        hash = bin2hex(sha.hash(str2bin(toBeHashed)));
-        cumulative.update(str2bin(hash));
+        hash = bin2hex(sha.hash(encoder.encode(toBeHashed)));
+        cumulative.update(encoder.encode(hash));
         toBeHashed = (hash.substring(0, 2) + toBeHashed).substring(0, n + 1);
       }
     }
     hash = bin2hex(cumulative.digest());
     return hash === '602923787640dd6d77a99b101c379577a4054df2d61f39c74172cafa2d9f5b26a11b40b7ba4cdc87e84a4ab91b85391cb3e1c0200f3e3d5e317486aae7bebbf3';
   }
+}
+
+/** Obtain a SHA512 hash of an utf8 encoded string or an Uint8Array. */
+export function sha512(msg: string | Uint8Array): Uint8Array {
+  return new SHA512().init().digest(msg);
 }
