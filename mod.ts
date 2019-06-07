@@ -1,23 +1,20 @@
 import { Hash, clear, bin2hex, str2bin } from './utils.ts';
 
-/**
- * SHA512 class
- */
+const encoder: TextEncoder = new TextEncoder();
+
+/** A class representation of the SHA-512 algorithm. */
 export class SHA512 implements Hash {
-  hashSize: number;
-  buffer: Uint8Array;
+  readonly hashSize: number = 64;
+  readonly buffer: Uint8Array = new Uint8Array(128);
+  
   bufferIndex: number;
   count: Uint32Array;
   K: Uint32Array;
   H: Uint32Array;
 
 
-  /**
-   * SHA512 ctor
-   */
+  /** Creates a SHA512 instance. */
   constructor() {
-    this.hashSize = 64;
-    this.buffer = new Uint8Array(128); // 128 byte array
     this.K = new Uint32Array([
       0x428a2f98, 0xd728ae22, 0x71374491, 0x23ef65cd, 0xb5c0fbcf, 0xec4d3b2f, 0xe9b5dba5, 0x8189dbbc,
       0x3956c25b, 0xf348b538, 0x59f111f1, 0xb605d019, 0x923f82a4, 0xaf194f9b, 0xab1c5ed5, 0xda6d8118,
@@ -207,8 +204,13 @@ export class SHA512 implements Hash {
    * @param {Uint8Array} msg Additional message data as byte array
    * @return {SHA512} this
    */
-  update(msg?: Uint8Array): SHA512 {
-    msg = msg || new Uint8Array(0);
+  update(msg?: string | Uint8Array): SHA512 {
+    // msg = msg || new Uint8Array(0);
+    if (!msg) {
+      msg = new Uint8Array(0);
+    } else if (typeof msg === "string") {
+      msg = encoder.encode(msg);
+    }
     // process the msg as many times as possible, the rest is stored in the buffer
     // message is processed in 1024 bit (128 byte chunks)
     for (let i = 0; i < msg.length; i++) {
@@ -235,7 +237,7 @@ export class SHA512 implements Hash {
    * @param {Uint8Array} msg Additional message data as byte array
    * @return {Uint8Array} Hash as 64 byte array
    */
-  digest(msg?: Uint8Array): Uint8Array {
+  digest(msg?: string | Uint8Array): Uint8Array {
     this.update(msg);
 
     // append '1'
