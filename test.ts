@@ -25,11 +25,13 @@ function hex2buf(hex: string): Uint8Array {
 
 const testVectors: TestVector[] = JSON.parse(
   new TextDecoder().decode(Deno.readFileSync("./test_vectors.json"))
-).map(({ msg, msg_bit_len, hash }): TestVector => ({
+).map(
+  ({ msg, msg_bit_len, hash }): TestVector => ({
     msg: hex2buf(msg),
     msg_bit_len,
     hash: hex2buf(hash)
-  }));
+  })
+);
 
 testVectors.forEach(({ msg, msg_bit_len, hash }: TestVector) => {
   test({
