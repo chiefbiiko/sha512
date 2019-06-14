@@ -7,19 +7,20 @@ import {
 export const BYTES: number = 64;
 
 /** A class representation of the SHA2-512 algorithm. */
-export class SHA512 /*implements Hash*/ {
+export class SHA512 {
   readonly hashSize: number = BYTES;
-  readonly buffer: Uint8Array = new Uint8Array(128);
-
-  bufferIndex: number;
-  count: Uint32Array;
-  K: Uint32Array;
-  H: Uint32Array;
+  
+  private _buffer: Uint8Array = new Uint8Array(128);
+  private _bufferIndex: number;
+  private _count: Uint32Array;
+  private _K: Uint32Array;
+  private _H: Uint32Array;
+  private _finalized: boolean;
 
   /** Creates a SHA512 instance. */
   constructor() {
     // prettier-ignore
-    this.K = new Uint32Array([
+    this._K = new Uint32Array([
       0x428a2f98, 0xd728ae22, 0x71374491, 0x23ef65cd, 0xb5c0fbcf, 0xec4d3b2f,
       0xe9b5dba5, 0x8189dbbc, 0x3956c25b, 0xf348b538, 0x59f111f1, 0xb605d019,
       0x923f82a4, 0xaf194f9b, 0xab1c5ed5, 0xda6d8118, 0xd807aa98, 0xa3030242,
@@ -55,15 +56,16 @@ export class SHA512 /*implements Hash*/ {
   /** Initializes a SHA512 instance. */
   init(): SHA512 {
     // prettier-ignore
-    this.H = new Uint32Array([
+    this._H = new Uint32Array([
       0x6a09e667, 0xf3bcc908, 0xbb67ae85, 0x84caa73b, 0x3c6ef372, 0xfe94f82b,
       0xa54ff53a, 0x5f1d36f1, 0x510e527f, 0xade682d1, 0x9b05688c, 0x2b3e6c1f,
       0x1f83d9ab, 0xfb41bd6b, 0x5be0cd19, 0x137e2179
     ]);
 
-    this.bufferIndex = 0;
-    this.count = new Uint32Array(2);
-    this.buffer.fill(0);
+    this._bufferIndex = 0;
+    this._count = new Uint32Array(2);
+    this._buffer.fill(0);
+    this._finalized = false;
 
     return this;
   }
@@ -79,15 +81,15 @@ export class SHA512 /*implements Hash*/ {
     // process the msg as many times as possible, the rest is stored in the
     // buffer; message is processed in 1024 bit (128 byte chunks)
     for (let i = 0; i < msg.length; i++) {
-      this.buffer[this.bufferIndex++] = msg[i];
-      if (this.bufferIndex === 128) {
+      this._buffer[this._bufferIndex++] = msg[i];
+      if (this._bufferIndex === 128) {
         this.transform();
-        this.bufferIndex = 0;
+        this._bufferIndex = 0;
       }
     }
 
     // counter update (number of message bits)
-    let c = this.count;
+    let c = this._count;
 
     if ((c[0] += msg.length << 3) < msg.length << 3) {
       c[1]++;
@@ -100,9 +102,15 @@ export class SHA512 /*implements Hash*/ {
 
   /** Finalizes the hash with additional message data. */
   digest(outputEncoding?: string): string | Uint8Array {
+    if (this._finalized) {
+      throw new Error("digest has already been called.")
+    }
+
+    this._finalized = true;
+
     // append '1'
-    var b = this.buffer,
-      idx = this.bufferIndex;
+    var b = this._buffer,
+      idx = this._bufferIndex;
     b[idx++] = 0x80;
 
     // zeropad up to byte pos 112
@@ -115,7 +123,7 @@ export class SHA512 /*implements Hash*/ {
     }
 
     // append length in bits
-    let c = this.count;
+    let c = this._count;
 
     b[112] = b[113] = b[114] = b[115] = b[116] = b[117] = b[118] = b[119] = 0;
     b[120] = (c[1] >>> 24) & 0xff;
@@ -134,10 +142,10 @@ export class SHA512 /*implements Hash*/ {
       hash = new Uint8Array(64);
 
     for (i = 0; i < 16; i++) {
-      hash[(i << 2) + 0] = (this.H[i] >>> 24) & 0xff;
-      hash[(i << 2) + 1] = (this.H[i] >>> 16) & 0xff;
-      hash[(i << 2) + 2] = (this.H[i] >>> 8) & 0xff;
-      hash[(i << 2) + 3] = this.H[i] & 0xff;
+      hash[(i << 2) + 0] = (this._H[i] >>> 24) & 0xff;
+      hash[(i << 2) + 1] = (this._H[i] >>> 16) & 0xff;
+      hash[(i << 2) + 2] = (this._H[i] >>> 8) & 0xff;
+      hash[(i << 2) + 3] = this._H[i] & 0xff;
     }
 
     // clear internal states and prepare for new hash
@@ -148,7 +156,7 @@ export class SHA512 /*implements Hash*/ {
 
   /** Performs one transformation cycle. */
   private transform(): void {
-    let h = this.H,
+    let h = this._H,
       h0h = h[0],
       h0l = h[1],
       h1h = h[2],
@@ -189,10 +197,10 @@ export class SHA512 /*implements Hash*/ {
 
     for (i = 0; i < 32; i++) {
       w[i] =
-        this.buffer[(i << 2) + 3] |
-        (this.buffer[(i << 2) + 2] << 8) |
-        (this.buffer[(i << 2) + 1] << 16) |
-        (this.buffer[i << 2] << 24);
+        this._buffer[(i << 2) + 3] |
+        (this._buffer[(i << 2) + 2] << 8) |
+        (this._buffer[(i << 2) + 1] << 16) |
+        (this._buffer[i << 2] << 24);
     }
 
     // fill w[32..159]
@@ -301,8 +309,8 @@ export class SHA512 /*implements Hash*/ {
         ((el << 23) | (eh >>> 9));
 
       // K(round)
-      krh = this.K[i * 2];
-      krl = this.K[i * 2 + 1];
+      krh = this._K[i * 2];
+      krl = this._K[i * 2 + 1];
 
       // t1 = h + sigma1 + ch + K(round) + W(round)
       t1l = hl + sig1l;
