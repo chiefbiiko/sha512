@@ -69,9 +69,9 @@ export class SHA512 /*implements Hash*/ {
   }
 
   /** Updates the hash with additional message data. */
-  update(msg?: string | Uint8Array, inputEncoding?: string): SHA512 {
-    if (!msg) {
-      msg = new Uint8Array(0);
+  update(msg: string | Uint8Array, inputEncoding?: string): SHA512 {
+    if (msg === null) {
+      throw new TypeError("msg must be a string or Uint8Array.");
     } else if (typeof msg === "string") {
       msg = encode(msg, inputEncoding) as Uint8Array;
     }
