@@ -9,7 +9,7 @@ SHA2-512 for [`deno`](https://deno.land).
 ``` ts
 import { sha512 } from "https://denopkg.com/chiefbiiko/sha512/mod.ts";
 
-console.log('SHA2-512 of ""', sha512(""))
+console.log('SHA2-512 of ""', sha512("", "utf8", "hex"))
 ```
 
 ## API
@@ -22,7 +22,7 @@ Creates a new SHA2-512 instance.
 
 Initializes a hash instance.
 
-#### `SHA512#update(msg?: string | Uint8Array, inputEncoding?: string): SHA512`
+#### `SHA512#update(msg: string | Uint8Array, inputEncoding?: string): SHA512`
 
 Updates a hash with additional data. `inputEncoding` can be one of `"utf8"`, `"hex"`, or `"base64"`.
 
