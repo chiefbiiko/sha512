@@ -1,6 +1,6 @@
 # sha512
 
-[![Travis](http://img.shields.io/travis/chiefbiiko/sha512.svg?style=flat)](http://travis-ci.org/chiefbiiko/sha512) [![AppVeyor](https://ci.appveyor.com/api/projects/status/github/chiefbiiko/sha512?branch=master&svg=true)](https://ci.appveyor.com/project/chiefbiiko/sha512)
+![ci](https://github.com/chiefbiiko/sha512/workflows/ci/badge.svg)
 
 SHA2-512 for [`deno`](https://deno.land).
 
