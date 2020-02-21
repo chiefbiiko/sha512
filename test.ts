@@ -1,4 +1,3 @@
-import { test, runIfMain } from "https://deno.land/std/testing/mod.ts";
 import { assertEquals } from "https://deno.land/std/testing/asserts.ts";
 import { sha512 } from "./mod.ts";
 
@@ -23,9 +22,9 @@ function hex2buf(hex: string): Uint8Array {
   return buf;
 }
 
-const testVectors: TestVector[] = JSON.parse(
+const testVectors: TestVector[] = (JSON.parse(
   new TextDecoder().decode(Deno.readFileSync("./test_vectors.json"))
-).map(
+) as any[]).map(
   ({ msg, msg_bit_len, hash }): TestVector => ({
     msg: hex2buf(msg),
     msg_bit_len,
@@ -34,12 +33,10 @@ const testVectors: TestVector[] = JSON.parse(
 );
 
 testVectors.forEach(({ msg, msg_bit_len, hash }: TestVector) => {
-  test({
+  Deno.test({
     name: `SHA2-512 ${msg_bit_len ? msg_bit_len / 8 : 0}-byte msg`,
     fn(): void {
       assertEquals(sha512(msg), hash);
     }
   });
 });
-
-runIfMain(import.meta, { parallel: true });

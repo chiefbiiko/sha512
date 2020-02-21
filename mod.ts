@@ -9,13 +9,13 @@ export const BYTES: number = 64;
 /** A class representation of the SHA2-512 algorithm. */
 export class SHA512 {
   readonly hashSize: number = BYTES;
-  
+
   private _buffer: Uint8Array = new Uint8Array(128);
-  private _bufferIndex: number;
-  private _count: Uint32Array;
+  private _bufferIndex!: number;
+  private _count!: Uint32Array;
   private _K: Uint32Array;
-  private _H: Uint32Array;
-  private _finalized: boolean;
+  private _H!: Uint32Array;
+  private _finalized!: boolean;
 
   /** Creates a SHA512 instance. */
   constructor() {
